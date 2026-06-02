@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }} – QuickNotes{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('notes.index') }}">Notes</a></li>
+        <li class="breadcrumb-item active text-truncate" style="max-width: 260px;" aria-current="page">
+          {{ note.title }}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex align-items-start justify-content-between gap-2">
+        <h1 class="h4 mb-0">{{ note.title }}</h1>
+        <form action="{{ url_for('notes.delete_note', note_id=note.id) }}"
+              method="post"
+              onsubmit="return confirm('Delete this note?');">
+          <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap">
+            <i class="bi bi-trash me-1"></i>Delete
+          </button>
+        </form>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          <i class="bi bi-clock me-1"></i>
+          Created {{ note.created_at.strftime('%B %d, %Y at %H:%M') }}
+        </p>
+        <div class="note-body">{{ note.content }}</div>
+      </div>
+      <div class="card-footer bg-white">
+        <a href="{{ url_for('notes.index') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-arrow-left me-1"></i>Back to Notes
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

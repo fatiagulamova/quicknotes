@@ -1,0 +1,45 @@
+/* QuickNotes – custom styles (Bootstrap 5 overrides) */
+
+/* Sticky footer layout */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+main {
+  flex: 1;
+}
+
+/* Note card hover effect */
+.note-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.note-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.09) !important;
+}
+
+/* Clamp preview text to 3 lines */
+.note-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+/* Note body – preserve line breaks */
+.note-body {
+  white-space: pre-wrap;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Empty state */
+.empty-state {
+  color: #adb5bd;
+}
