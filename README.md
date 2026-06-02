@@ -1,122 +1,40 @@
-# QuickNotes
+QuickNotes: Cloud-Native Not Uygulaması
+Bu proje, Google Kubernetes Engine (GKE) üzerinde çalışan, yüksek erişilebilirliğe ve güvenliğe sahip bir not alma uygulamasıdır.
 
-A lightweight note-taking web application built with **Flask** and **MySQL** — designed as a starting point for a university cloud computing course.
+1. Uygulama ve Sistem Mimarisi
+Uygulama, Python (Flask) tabanlı olup MySQL veritabanı ile etkileşim kurar.
 
-## Project Structure
+Uygulama Mimarisi: İnce ve hafif bir Docker imajı (python:3.10-slim) üzerine kurulmuştur.
 
-```
-quicknotes/
-├── app.py              # Flask application entry point
-├── config.py           # Configuration (reads from .env)
-├── db.py               # Database connection & query helpers
-├── routes.py           # URL routes (Blueprint)
-├── requirements.txt    # Python dependencies
-├── schema.sql          # Database schema
-├── .env.example        # Example environment variables
-├── static/
-│   └── css/
-│       └── style.css   # Custom styles
-└── templates/
-    ├── base.html       # Base layout (Bootstrap 5)
-    ├── index.html      # Notes list
-    ├── note_form.html  # Create note form
-    └── note_detail.html# Note detail view
-```
+Sistem Mimarisi: GKE üzerinde çalışan, harici trafiği LoadBalancer ile karşılayan ve veritabanını izole eden bir yapıdır.
 
-## Prerequisites
+2. Kubernetes Mimarisi (k8s/)
+Projemiz "Infrastructure as Code" (IaC) ilkeleriyle modüler hale getirilmiştir:
 
-- Python 3.10+
-- MySQL 8.0+
+deployment.yaml: Uygulama ve veritabanı konteynerlerinin çalışma durumunu yönetir.
 
-## Setup Instructions
+service.yaml: Dahili (ClusterIP) ve harici (LoadBalancer) ağ trafiğini yönlendirir.
 
-### 1. Clone / Download the project
+pvc.yaml: Veri kalıcılığı için 1GB Persistent Volume Claim (Veritabanı verilerini korur).
 
-```bash
-cd quicknotes
-```
+network-policy.yaml: MySQL veritabanına sadece quicknotes uygulamasının erişebilmesini sağlayarak "Zero Trust" güvenliğini uygular.
 
-### 2. Create and activate a virtual environment
+3. CI/CD Pipeline Akışı
+cloudbuild.yaml dosyası ile tam otomasyon süreci:
 
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
+Push: Kodlar GitHub'a gönderilir.
 
-# macOS / Linux
-python -m venv venv
-source venv/bin/activate
-```
+Build & Push: Cloud Build yeni Docker imajını derler ve Google Container Registry'ye (GCR) gönderir.
 
-### 3. Install Python dependencies
+Deploy: Pipeline otomatik olarak GKE üzerindeki imajı kubectl set image komutuyla günceller (Rolling Update).
 
-```bash
-pip install -r requirements.txt
-```
+4. Yönetim ve Test Komutları
+Sunum sırasında sistemi yönetmek için kullanacağın komutlar:
 
-### 4. Create the database
+Ölçekleme (Scaling): kubectl scale deployment quicknotes-deployment --replicas=3
 
-Log in to MySQL and run the schema script:
+Sistem Durumu: kubectl get pods
 
-```bash
-mysql -u root -p < schema.sql
-```
+Geri Dönüş (Rollback): kubectl rollout undo deployment quicknotes-deployment
 
-Or copy-paste the contents of `schema.sql` into MySQL Workbench / DBeaver.
-
-### 5. Configure environment variables
-
-Copy the example file and fill in your credentials:
-
-```bash
-cp .env.example .env   # macOS/Linux
-copy .env.example .env # Windows
-```
-
-Edit `.env`:
-
-```
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=quicknotes
-SECRET_KEY=replace-with-a-random-string
-```
-
-### 6. Run the application
-
-```bash
-python app.py
-```
-
-Open your browser and navigate to **http://127.0.0.1:5000**.
-
-## Features
-
-| Feature       | Route                    | Method      |
-|---------------|--------------------------|-------------|
-| List notes    | `/`                      | GET         |
-| Create note   | `/notes/new`             | GET / POST  |
-| View note     | `/notes/<id>`            | GET         |
-| Delete note   | `/notes/<id>/delete`     | POST        |
-
-## Database Schema
-
-```sql
-CREATE TABLE notes (
-    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    title      VARCHAR(255) NOT NULL,
-    content    TEXT         NOT NULL,
-    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-);
-```
-
-## Notes for the Course
-
-This project is intentionally containerisation-free. In later labs you will:
-
-1. Add a `Dockerfile` to containerise the Flask app.
-2. Add a `docker-compose.yml` to orchestrate Flask + MySQL together.
-3. Write Kubernetes manifests (Deployment, Service, ConfigMap, Secret) to deploy to a cluster.
+Yeniden Başlatma: kubectl rollout restart deployment quicknotes-deployment
