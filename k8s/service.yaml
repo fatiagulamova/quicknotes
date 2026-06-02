@@ -1,0 +1,25 @@
+# 1. MySQL Service (Sadece Küme İçi)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+  clusterIP: None
+---
+# 2. App Service (Dışarıya Açılan Kapı)
+apiVersion: v1
+kind: Service
+metadata:
+  name: quicknotes-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: quicknotes
+  ports:
+  - port: 80
+    targetPort: 5000
